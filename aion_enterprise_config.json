@@ -1,0 +1,14 @@
+{
+  "creator": "aion-creator.pages.dev",
+  "api": "aion-creator-api.pako-molina.workers.dev",
+  "docs": "aion-docs.pages.dev",
+  "admin": "aion-admin.pages.dev",
+  "status": "aion-status.pages.dev",
+  "portal": "aion-portal.pages.dev",
+  "billing": "aion-billing.pages.dev",
+  "support": "aion-support.pages.dev",
+  "monitor": "aion-monitor.pages.dev",
+  "cdn": "aion-cdn.r2.dev",
+  "assets": "aion-assets.r2.dev",
+  "backups": "aion-backups.r2.dev"
+}

@@ -1,0 +1,9 @@
+{
+  "api": "your-api.workers.dev",
+  "app": "your-app.pages.dev",
+  "docs": "your-docs.pages.dev",
+  "admin": "your-admin.pages.dev",
+  "status": "your-status.pages.dev",
+  "blog": "your-blog.pages.dev",
+  "cdn": "your-cdn.r2.dev"
+}
