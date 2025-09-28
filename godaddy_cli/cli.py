@@ -193,6 +193,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from godaddy_cli.commands.doctor import doctor
+    cli.add_command(doctor)
+except ImportError:
+    pass
+
 def main():
     """Main entry point"""
     try:

@@ -24,6 +24,7 @@ class UserFriendlyErrorHandler:
     def handle_api_response_error(response: requests.Response, context: Dict[str, Any] = None) -> None:
         """
         Handle API response errors with specific user-friendly messages
+        Decodes GoDaddy API error responses for intelligent guidance
 
         Args:
             response: HTTP response object
@@ -39,9 +40,33 @@ class UserFriendlyErrorHandler:
             error_data = response.json()
             api_message = error_data.get('message', 'Unknown error')
             api_code = error_data.get('code', 'UNKNOWN')
-        except:
+
+            # Handle specific GoDaddy API error codes
+            if api_code == 'DOMAIN_NOT_FOUND':
+                raise UserFriendlyErrorHandler._handle_domain_not_found_error(domain, api_message)
+            elif api_code == 'RECORD_NOT_FOUND':
+                raise UserFriendlyErrorHandler._handle_record_not_found_error(domain, record_name, record_type, api_message)
+            elif api_code == 'INVALID_IP_ADDRESS':
+                raise UserFriendlyErrorHandler._handle_invalid_ip_error(api_message, context)
+            elif api_code == 'INVALID_DOMAIN':
+                raise UserFriendlyErrorHandler._handle_invalid_domain_error(domain, api_message)
+            elif api_code == 'DUPLICATE_RECORD':
+                raise UserFriendlyErrorHandler._handle_duplicate_record_error(domain, record_name, record_type, api_message)
+            elif api_code == 'QUOTA_EXCEEDED':
+                raise UserFriendlyErrorHandler._handle_quota_exceeded_error(api_message)
+            elif 'TTL' in api_code.upper():
+                raise UserFriendlyErrorHandler._handle_ttl_error(api_message, context)
+
+        except ValueError:
+            # Not JSON, try to parse text response
             api_message = response.text or f"HTTP {response.status_code}"
             api_code = 'HTTP_ERROR'
+
+            # Look for common patterns in text responses
+            if 'domain not found' in api_message.lower():
+                raise UserFriendlyErrorHandler._handle_domain_not_found_error(domain, api_message)
+            elif 'record not found' in api_message.lower():
+                raise UserFriendlyErrorHandler._handle_record_not_found_error(domain, record_name, record_type, api_message)
 
         # Handle specific status codes with enhanced messages
         if response.status_code == 400:
@@ -306,6 +331,115 @@ class UserFriendlyErrorHandler:
             console.print("\n[bold blue]Suggested alternatives:[/bold blue]")
             for suggestion in suggestions:
                 console.print(f"  [dim]$[/dim] [cyan]{suggestion}[/cyan]")
+
+
+    @staticmethod
+    def _handle_domain_not_found_error(domain: str, api_message: str) -> Exception:
+        """Handle domain not found with specific guidance"""
+        return DomainNotFoundError(
+            f"GoDaddy reported that domain '{domain}' is not found in your account.\n\n"
+            f"Possible solutions:\n"
+            f"1. Check the domain spelling: '{domain}'\n"
+            f"2. Verify the domain is registered with your GoDaddy account\n"
+            f"3. Make sure you're using the correct API credentials\n"
+            f"4. Check if domain is in a different GoDaddy account\n\n"
+            f"To verify: Run 'godaddy domains list' to see all your domains.\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_record_not_found_error(domain: str, record_name: str, record_type: str, api_message: str) -> Exception:
+        """Handle DNS record not found with specific guidance"""
+        return RecordNotFoundError(
+            f"GoDaddy reported that the {record_type} record '{record_name}' was not found for domain '{domain}'.\n\n"
+            f"What you can do:\n"
+            f"1. List existing records: 'godaddy dns list {domain}'\n"
+            f"2. Check the record name spelling: '{record_name}'\n"
+            f"3. Verify the record type: '{record_type}'\n"
+            f"4. Create the record if it doesn't exist: 'godaddy dns add {domain} --name {record_name} --type {record_type}'\n\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_invalid_ip_error(api_message: str, context: Dict[str, Any]) -> Exception:
+        """Handle invalid IP address with specific guidance"""
+        record_data = context.get('record_data', 'the provided IP')
+        return ValidationError(
+            f"GoDaddy rejected the IP address: {record_data}\n\n"
+            f"IP address requirements:\n"
+            f"• IPv4 format: 192.168.1.1 (four numbers 0-255 separated by dots)\n"
+            f"• IPv6 format: 2001:db8::1 (hexadecimal groups separated by colons)\n"
+            f"• No spaces or special characters\n"
+            f"• Must be a valid public IP address\n\n"
+            f"Examples of valid IPs:\n"
+            f"• IPv4: 1.2.3.4, 192.168.1.100, 10.0.0.1\n"
+            f"• IPv6: 2001:db8::1, ::1, fe80::1\n\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_invalid_domain_error(domain: str, api_message: str) -> Exception:
+        """Handle invalid domain format with specific guidance"""
+        return ValidationError(
+            f"GoDaddy rejected the domain format: '{domain}'\n\n"
+            f"Domain format requirements:\n"
+            f"• Must be a valid domain name (e.g., example.com)\n"
+            f"• Can contain letters, numbers, and hyphens\n"
+            f"• Cannot start or end with a hyphen\n"
+            f"• Must have a valid TLD (.com, .org, .net, etc.)\n"
+            f"• Maximum 253 characters total\n\n"
+            f"Examples of valid domains:\n"
+            f"• example.com, my-site.org, test123.net\n\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_duplicate_record_error(domain: str, record_name: str, record_type: str, api_message: str) -> Exception:
+        """Handle duplicate record with specific guidance"""
+        return ConflictError(
+            f"GoDaddy reported that a {record_type} record for '{record_name}' already exists in domain '{domain}'.\n\n"
+            f"Your options:\n"
+            f"1. Update the existing record: 'godaddy dns update {domain} --name {record_name} --type {record_type} --data [new-value]'\n"
+            f"2. Delete the existing record first: 'godaddy dns delete {domain} --name {record_name} --type {record_type}'\n"
+            f"3. View current records: 'godaddy dns list {domain} --name {record_name}'\n\n"
+            f"Note: Some record types (like CNAME) can only have one instance per name.\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_quota_exceeded_error(api_message: str) -> Exception:
+        """Handle quota exceeded with specific guidance"""
+        return APIError(
+            f"GoDaddy API quota exceeded - you've reached your rate limit.\n\n"
+            f"What this means:\n"
+            f"• You've made too many API requests in a short time\n"
+            f"• GoDaddy limits requests to prevent abuse\n"
+            f"• This is temporary and will reset automatically\n\n"
+            f"What you can do:\n"
+            f"1. Wait a few minutes before trying again\n"
+            f"2. Use bulk operations for multiple changes\n"
+            f"3. Reduce the frequency of your requests\n"
+            f"4. Consider using '--delay' option for batch operations\n\n"
+            f"GoDaddy API response: {api_message}"
+        )
+
+    @staticmethod
+    def _handle_ttl_error(api_message: str, context: Dict[str, Any]) -> Exception:
+        """Handle TTL-related errors with specific guidance"""
+        ttl_value = context.get('ttl', 'the provided TTL')
+        return ValidationError(
+            f"GoDaddy rejected the TTL (Time To Live) value: {ttl_value}\n\n"
+            f"TTL requirements:\n"
+            f"• Must be between 300 seconds (5 minutes) and 604800 seconds (7 days)\n"
+            f"• Common values: 300 (5 min), 3600 (1 hour), 86400 (24 hours)\n"
+            f"• Lower values = faster updates, higher DNS query load\n"
+            f"• Higher values = slower updates, lower DNS query load\n\n"
+            f"Recommended TTL values:\n"
+            f"• 300s: During DNS changes/migrations\n"
+            f"• 3600s: Standard for most records\n"
+            f"• 86400s: Stable records that rarely change\n\n"
+            f"GoDaddy API response: {api_message}"
+        )
 
 
 def create_error_context(operation: str, domain: str = None, record_name: str = None,
