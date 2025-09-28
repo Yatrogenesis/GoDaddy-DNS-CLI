@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { Globe, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Globe, Shield, AlertTriangle, CheckCircle, Upload, Settings } from 'lucide-react';
 import apiClient from '@/utils/api';
 import { DNSRecordTable } from '@/components/DNSRecordTable';
 import { DNSRecordForm } from '@/components/DNSRecordForm';
+import { BulkOperations } from '@/components/BulkOperations';
+import { AdvancedFeatures } from '@/components/AdvancedFeatures';
 import type { DNSRecord, Domain, CreateRecordRequest, ValidationResult } from '@/types/api';
 
 export const Dashboard: React.FC = () => {
   const [selectedDomain, setSelectedDomain] = useState<string>('');
   const [showRecordForm, setShowRecordForm] = useState(false);
+  const [showBulkOperations, setShowBulkOperations] = useState(false);
+  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
   const [editingRecord, setEditingRecord] = useState<DNSRecord | undefined>();
   const queryClient = useQueryClient();
 
@@ -145,26 +149,47 @@ export const Dashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Select Domain:
-              </label>
-              <select
-                value={selectedDomain}
-                onChange={(e) => setSelectedDomain(e.target.value)}
-                disabled={domainsLoading}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {domainsLoading ? (
-                  <option>Loading domains...</option>
-                ) : (
-                  domains.map((domain) => (
-                    <option key={domain.domain} value={domain.domain}>
-                      {domain.domain}
-                    </option>
-                  ))
-                )}
-              </select>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center space-x-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Domain:
+                </label>
+                <select
+                  value={selectedDomain}
+                  onChange={(e) => setSelectedDomain(e.target.value)}
+                  disabled={domainsLoading}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {domainsLoading ? (
+                    <option>Loading domains...</option>
+                  ) : (
+                    domains.map((domain) => (
+                      <option key={domain.domain} value={domain.domain}>
+                        {domain.domain}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              {selectedDomain && (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setShowBulkOperations(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Bulk Operations</span>
+                  </button>
+                  <button
+                    onClick={() => setShowAdvancedFeatures(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Advanced</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {selectedDomain && validation && (
@@ -249,6 +274,21 @@ export const Dashboard: React.FC = () => {
           editRecord={editingRecord}
           domain={selectedDomain}
         />
+
+        {showBulkOperations && selectedDomain && (
+          <BulkOperations
+            domain={selectedDomain}
+            records={records}
+            onClose={() => setShowBulkOperations(false)}
+          />
+        )}
+
+        {showAdvancedFeatures && selectedDomain && (
+          <AdvancedFeatures
+            domain={selectedDomain}
+            onClose={() => setShowAdvancedFeatures(false)}
+          />
+        )}
       </div>
     </div>
   );

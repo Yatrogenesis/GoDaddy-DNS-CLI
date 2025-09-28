@@ -50,6 +50,12 @@ export const apiClient = {
   bulkOperation: (domain: string, operation: BulkOperationRequest): Promise<{ data: { result: BulkOperationResult } }> =>
     api.post(`/domains/${domain}/bulk`, operation),
 
+  bulkImportRecords: (domain: string, records: DNSRecord[]): Promise<{ data: BulkOperationResult }> =>
+    api.post(`/domains/${domain}/bulk/import`, { records }),
+
+  bulkExportRecords: (domain: string, format: 'csv' | 'json' | 'yaml' = 'json'): Promise<{ data: any }> =>
+    api.get(`/domains/${domain}/export`, { params: { format } }),
+
   // Templates
   getTemplates: (): Promise<{ data: Template[] }> => api.get('/templates'),
 

@@ -69,6 +69,39 @@ class NotFoundError(APIError):
         super().__init__(message, status_code=404)
 
 
+class RecordNotFoundError(NotFoundError):
+    """Exception raised when a DNS record is not found"""
+
+    def __init__(self, domain: str, record_name: str = None, record_type: str = None):
+        self.domain = domain
+        self.record_name = record_name
+        self.record_type = record_type
+
+        if record_name and record_type:
+            message = f"DNS record '{record_type}' with name '{record_name}' not found in domain '{domain}'"
+            suggestion = f"Try 'godaddy dns list {domain}' to see available records"
+        elif record_type:
+            message = f"No '{record_type}' records found in domain '{domain}'"
+            suggestion = f"Try 'godaddy dns add {domain} --type {record_type}' to create one"
+        else:
+            message = f"No DNS records found in domain '{domain}'"
+            suggestion = f"Try 'godaddy dns add {domain}' to create your first record"
+
+        full_message = f"{message}. {suggestion}"
+        super().__init__(full_message, "dns_record")
+
+
+class DomainNotFoundError(NotFoundError):
+    """Exception raised when a domain is not found"""
+
+    def __init__(self, domain: str):
+        self.domain = domain
+        message = f"Domain '{domain}' not found in your GoDaddy account"
+        suggestion = "Check the domain name or verify it's registered with your account"
+        full_message = f"{message}. {suggestion}"
+        super().__init__(full_message, "domain")
+
+
 class ConflictError(APIError):
     """Exception raised when there's a conflict with existing resources"""
 

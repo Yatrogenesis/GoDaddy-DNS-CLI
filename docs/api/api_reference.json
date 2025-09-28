@@ -1,0 +1,660 @@
+{
+  "api_reference": {
+    "SimpleAPIClient": {
+      "name": "APIClient",
+      "docstring": "Enhanced synchronous GoDaddy API client",
+      "methods": {
+        "add_record": {
+          "name": "add_record",
+          "docstring": "Add DNS record",
+          "signature": "(self, domain: str, record: godaddy_cli.core.simple_api_client.DNSRecord) -> bool",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "bulk_add_records": {
+          "name": "bulk_add_records",
+          "docstring": "Add multiple DNS records",
+          "signature": "(self, domain: str, records: List[godaddy_cli.core.simple_api_client.DNSRecord]) -> Dict[str, Any]",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "bulk_update_records": {
+          "name": "bulk_update_records",
+          "docstring": "Update multiple DNS records",
+          "signature": "(self, domain: str, records: List[godaddy_cli.core.simple_api_client.DNSRecord]) -> Dict[str, Any]",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "close": {
+          "name": "close",
+          "docstring": "Close the session",
+          "signature": "(self)",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "delete_record": {
+          "name": "delete_record",
+          "docstring": "Delete DNS record",
+          "signature": "(self, domain: str, record_type: str, name: str) -> bool",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "get_domain": {
+          "name": "get_domain",
+          "docstring": "Get specific domain information",
+          "signature": "(self, domain: str) -> godaddy_cli.core.simple_api_client.Domain",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "get_domains": {
+          "name": "get_domains",
+          "docstring": "Get all domains",
+          "signature": "(self) -> List[godaddy_cli.core.simple_api_client.Domain]",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "get_records": {
+          "name": "get_records",
+          "docstring": "Get DNS records for domain",
+          "signature": "(self, domain: str, record_type: str = None, name: str = None) -> List[godaddy_cli.core.simple_api_client.DNSRecord]",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "test_connection": {
+          "name": "test_connection",
+          "docstring": "Test API connection",
+          "signature": "(self) -> bool",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "update_record": {
+          "name": "update_record",
+          "docstring": "Update DNS record",
+          "signature": "(self, domain: str, record: godaddy_cli.core.simple_api_client.DNSRecord) -> bool",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        },
+        "validate_records": {
+          "name": "validate_records",
+          "docstring": "Validate DNS records before submission",
+          "signature": "(self, records: List[godaddy_cli.core.simple_api_client.DNSRecord]) -> Dict[str, Any]",
+          "parameters": [],
+          "returns": "",
+          "examples": []
+        }
+      },
+      "attributes": [],
+      "inheritance": []
+    },
+    "DNSRecord": {
+      "name": "DNSRecord",
+      "type": "dataclass",
+      "docstring": "DNS record data structure",
+      "fields": [
+        {
+          "name": "name",
+          "type": "str",
+          "description": "Record name"
+        },
+        {
+          "name": "type",
+          "type": "str",
+          "description": "Record type (A, AAAA, CNAME, etc.)"
+        },
+        {
+          "name": "data",
+          "type": "str",
+          "description": "Record data/value"
+        },
+        {
+          "name": "ttl",
+          "type": "int",
+          "description": "Time to live in seconds",
+          "default": 3600
+        },
+        {
+          "name": "priority",
+          "type": "Optional[int]",
+          "description": "Priority for MX/SRV records"
+        },
+        {
+          "name": "port",
+          "type": "Optional[int]",
+          "description": "Port for SRV records"
+        },
+        {
+          "name": "weight",
+          "type": "Optional[int]",
+          "description": "Weight for SRV records"
+        }
+      ]
+    },
+    "Domain": {
+      "name": "Domain",
+      "type": "dataclass",
+      "docstring": "Domain information structure",
+      "fields": [
+        {
+          "name": "domain",
+          "type": "str",
+          "description": "Domain name"
+        },
+        {
+          "name": "status",
+          "type": "str",
+          "description": "Domain status"
+        },
+        {
+          "name": "expires",
+          "type": "str",
+          "description": "Expiration date"
+        },
+        {
+          "name": "privacy",
+          "type": "bool",
+          "description": "Privacy protection enabled"
+        },
+        {
+          "name": "locked",
+          "type": "bool",
+          "description": "Domain locked status"
+        }
+      ]
+    }
+  },
+  "cli_commands": {
+    "dns": {
+      "module": "godaddy_cli.commands.dns",
+      "description": "DNS record management commands",
+      "subcommands": {
+        "list": {
+          "description": "List DNS records for a domain",
+          "usage": "godaddy dns list DOMAIN [OPTIONS]",
+          "options": [
+            {
+              "name": "--type",
+              "description": "Filter by record type"
+            },
+            {
+              "name": "--name",
+              "description": "Filter by record name"
+            },
+            {
+              "name": "--format",
+              "description": "Output format (table, json, yaml, csv)"
+            },
+            {
+              "name": "--export",
+              "description": "Export to file"
+            }
+          ],
+          "examples": [
+            "godaddy dns list example.com",
+            "godaddy dns list example.com --type A",
+            "godaddy dns list example.com --format json",
+            "godaddy dns list example.com --export records.csv"
+          ]
+        },
+        "add": {
+          "description": "Add a DNS record",
+          "usage": "godaddy dns add DOMAIN --name NAME --type TYPE --data DATA [OPTIONS]",
+          "options": [
+            {
+              "name": "--name",
+              "description": "Record name",
+              "required": true
+            },
+            {
+              "name": "--type",
+              "description": "Record type",
+              "required": true
+            },
+            {
+              "name": "--data",
+              "description": "Record data",
+              "required": true
+            },
+            {
+              "name": "--ttl",
+              "description": "Time to live (default: 3600)"
+            },
+            {
+              "name": "--priority",
+              "description": "Priority for MX records"
+            }
+          ],
+          "examples": [
+            "godaddy dns add example.com --name www --type A --data 192.168.1.1",
+            "godaddy dns add example.com --name mail --type MX --data mail.example.com --priority 10",
+            "godaddy dns add example.com --name @ --type TXT --data \"v=spf1 mx ~all\""
+          ]
+        },
+        "update": {
+          "description": "Update an existing DNS record",
+          "usage": "godaddy dns update DOMAIN --name NAME --type TYPE --data DATA [OPTIONS]",
+          "options": [
+            {
+              "name": "--name",
+              "description": "Record name",
+              "required": true
+            },
+            {
+              "name": "--type",
+              "description": "Record type",
+              "required": true
+            },
+            {
+              "name": "--data",
+              "description": "New record data",
+              "required": true
+            },
+            {
+              "name": "--ttl",
+              "description": "Time to live"
+            }
+          ],
+          "examples": [
+            "godaddy dns update example.com --name www --type A --data 192.168.1.2",
+            "godaddy dns update example.com --name @ --type A --data 192.168.1.1 --ttl 7200"
+          ]
+        },
+        "delete": {
+          "description": "Delete a DNS record",
+          "usage": "godaddy dns delete DOMAIN --name NAME --type TYPE [OPTIONS]",
+          "options": [
+            {
+              "name": "--name",
+              "description": "Record name",
+              "required": true
+            },
+            {
+              "name": "--type",
+              "description": "Record type",
+              "required": true
+            },
+            {
+              "name": "--force",
+              "description": "Skip confirmation"
+            }
+          ],
+          "examples": [
+            "godaddy dns delete example.com --name old --type A",
+            "godaddy dns delete example.com --name test --type CNAME --force"
+          ]
+        }
+      }
+    },
+    "domains": {
+      "module": "godaddy_cli.commands.domain",
+      "description": "Domain management commands",
+      "subcommands": {
+        "list": {
+          "description": "List all domains in your account",
+          "usage": "godaddy domains list [OPTIONS]",
+          "options": [
+            {
+              "name": "--format",
+              "description": "Output format (table, json)"
+            },
+            {
+              "name": "--status",
+              "description": "Filter by status"
+            }
+          ],
+          "examples": [
+            "godaddy domains list",
+            "godaddy domains list --format json",
+            "godaddy domains list --status ACTIVE"
+          ]
+        },
+        "info": {
+          "description": "Get detailed information about a domain",
+          "usage": "godaddy domains info DOMAIN",
+          "examples": [
+            "godaddy domains info example.com"
+          ]
+        }
+      }
+    },
+    "auth": {
+      "module": "godaddy_cli.commands.auth",
+      "description": "Authentication and credential management",
+      "subcommands": {
+        "setup": {
+          "description": "Configure API credentials",
+          "usage": "godaddy auth setup [OPTIONS]",
+          "options": [
+            {
+              "name": "--api-key",
+              "description": "GoDaddy API key"
+            },
+            {
+              "name": "--api-secret",
+              "description": "GoDaddy API secret"
+            },
+            {
+              "name": "--profile",
+              "description": "Configuration profile name"
+            }
+          ],
+          "examples": [
+            "godaddy auth setup",
+            "godaddy auth setup --profile production"
+          ]
+        },
+        "test": {
+          "description": "Test API connection",
+          "usage": "godaddy auth test",
+          "examples": [
+            "godaddy auth test"
+          ]
+        }
+      }
+    },
+    "bulk": {
+      "module": "godaddy_cli.commands.bulk",
+      "description": "Bulk operations for multiple DNS records",
+      "subcommands": {
+        "import": {
+          "description": "Import DNS records from CSV file",
+          "usage": "godaddy bulk import DOMAIN --file FILE [OPTIONS]",
+          "options": [
+            {
+              "name": "--file",
+              "description": "CSV file path",
+              "required": true
+            },
+            {
+              "name": "--dry-run",
+              "description": "Show what would be imported"
+            },
+            {
+              "name": "--replace",
+              "description": "Replace existing records"
+            }
+          ],
+          "examples": [
+            "godaddy bulk import example.com --file records.csv",
+            "godaddy bulk import example.com --file records.csv --dry-run"
+          ]
+        },
+        "export": {
+          "description": "Export DNS records to file",
+          "usage": "godaddy bulk export DOMAIN [OPTIONS]",
+          "options": [
+            {
+              "name": "--format",
+              "description": "Export format (csv, json, yaml)"
+            },
+            {
+              "name": "--output",
+              "description": "Output file path"
+            }
+          ],
+          "examples": [
+            "godaddy bulk export example.com --format csv",
+            "godaddy bulk export example.com --output backup.json"
+          ]
+        }
+      }
+    }
+  },
+  "utils": {
+    "validators": {
+      "description": "Input validation utilities",
+      "functions": {
+        "validate_domain": {
+          "description": "Validate domain name format",
+          "parameters": [
+            {
+              "name": "domain",
+              "type": "str",
+              "description": "Domain to validate"
+            }
+          ],
+          "returns": "bool - True if valid",
+          "examples": [
+            "validate_domain(\"example.com\")  # True"
+          ]
+        },
+        "validate_ip": {
+          "description": "Validate IP address format",
+          "parameters": [
+            {
+              "name": "ip",
+              "type": "str",
+              "description": "IP address to validate"
+            }
+          ],
+          "returns": "bool - True if valid",
+          "examples": [
+            "validate_ip(\"192.168.1.1\")  # True"
+          ]
+        },
+        "validate_ttl": {
+          "description": "Validate TTL value",
+          "parameters": [
+            {
+              "name": "ttl",
+              "type": "int",
+              "description": "TTL value to validate"
+            }
+          ],
+          "returns": "bool - True if valid (300-604800)",
+          "examples": [
+            "validate_ttl(3600)  # True"
+          ]
+        }
+      }
+    },
+    "formatters": {
+      "description": "Output formatting utilities",
+      "functions": {
+        "format_dns_table": {
+          "description": "Format DNS records as a table",
+          "parameters": [
+            {
+              "name": "records",
+              "type": "List[DNSRecord]",
+              "description": "DNS records to format"
+            },
+            {
+              "name": "title",
+              "type": "str",
+              "description": "Table title"
+            }
+          ],
+          "returns": "str - Formatted table string"
+        },
+        "format_json_output": {
+          "description": "Format data as JSON",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "Any",
+              "description": "Data to format"
+            },
+            {
+              "name": "pretty",
+              "type": "bool",
+              "description": "Pretty print format"
+            }
+          ],
+          "returns": "str - JSON string"
+        }
+      }
+    },
+    "error_handlers": {
+      "description": "Enhanced error handling utilities",
+      "classes": {
+        "UserFriendlyErrorHandler": {
+          "description": "Enhanced error handler with specific user guidance",
+          "methods": {
+            "handle_api_response_error": {
+              "description": "Handle API response errors with specific guidance",
+              "static": true
+            },
+            "display_error_with_suggestions": {
+              "description": "Display error with rich formatting and suggestions",
+              "static": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": {
+    "getting_started": {
+      "title": "Getting Started",
+      "steps": [
+        {
+          "step": 1,
+          "title": "Install the CLI",
+          "commands": [
+            "pip install godaddy-dns-cli",
+            "# or install from source",
+            "git clone https://github.com/Yatrogenesis/GoDaddy-DNS-CLI.git",
+            "cd GoDaddy-DNS-CLI",
+            "pip install -e ."
+          ]
+        },
+        {
+          "step": 2,
+          "title": "Configure API credentials",
+          "commands": [
+            "godaddy auth setup",
+            "# Follow the prompts to enter your API key and secret"
+          ],
+          "notes": [
+            "Get your API credentials from https://developer.godaddy.com/keys",
+            "Choose \"Production\" for live domains or \"OTE\" for testing"
+          ]
+        },
+        {
+          "step": 3,
+          "title": "Test connection",
+          "commands": [
+            "godaddy auth test"
+          ]
+        },
+        {
+          "step": 4,
+          "title": "List your domains",
+          "commands": [
+            "godaddy domains list"
+          ]
+        },
+        {
+          "step": 5,
+          "title": "Manage DNS records",
+          "commands": [
+            "godaddy dns list example.com",
+            "godaddy dns add example.com --name www --type A --data 192.168.1.1"
+          ]
+        }
+      ]
+    },
+    "common_tasks": {
+      "title": "Common DNS Management Tasks",
+      "scenarios": [
+        {
+          "title": "Setting up a web server",
+          "description": "Configure DNS for a typical web application",
+          "commands": [
+            "# Add main domain A record",
+            "godaddy dns add example.com --name @ --type A --data 192.168.1.1",
+            "",
+            "# Add www subdomain",
+            "godaddy dns add example.com --name www --type CNAME --data example.com",
+            "",
+            "# Add API subdomain",
+            "godaddy dns add example.com --name api --type A --data 192.168.1.2"
+          ]
+        },
+        {
+          "title": "Email server setup",
+          "description": "Configure DNS records for email hosting",
+          "commands": [
+            "# Add MX record",
+            "godaddy dns add example.com --name @ --type MX --data mail.example.com --priority 10",
+            "",
+            "# Add mail server A record",
+            "godaddy dns add example.com --name mail --type A --data 192.168.1.10",
+            "",
+            "# Add SPF record",
+            "godaddy dns add example.com --name @ --type TXT --data \"v=spf1 mx ~all\"",
+            "",
+            "# Add DMARC record",
+            "godaddy dns add example.com --name _dmarc --type TXT --data \"v=DMARC1; p=none; rua=mailto:dmarc@example.com\""
+          ]
+        },
+        {
+          "title": "Bulk operations",
+          "description": "Import/export multiple DNS records",
+          "commands": [
+            "# Export existing records",
+            "godaddy bulk export example.com --format csv --output backup.csv",
+            "",
+            "# Import records from CSV",
+            "godaddy bulk import example.com --file new-records.csv",
+            "",
+            "# Dry run to preview changes",
+            "godaddy bulk import example.com --file new-records.csv --dry-run"
+          ]
+        }
+      ]
+    },
+    "advanced_usage": {
+      "title": "Advanced Features",
+      "scenarios": [
+        {
+          "title": "Using templates",
+          "description": "Apply pre-configured DNS setups",
+          "commands": [
+            "# List available templates",
+            "godaddy template list",
+            "",
+            "# Apply web application template",
+            "godaddy template apply example.com web-app --var app_ip=192.168.1.1"
+          ]
+        },
+        {
+          "title": "Monitoring and validation",
+          "description": "Monitor DNS health and validate configuration",
+          "commands": [
+            "# Validate DNS configuration",
+            "godaddy dns validate example.com",
+            "",
+            "# Start monitoring",
+            "godaddy monitor start example.com --interval 300"
+          ]
+        },
+        {
+          "title": "Multiple profiles",
+          "description": "Manage multiple accounts or environments",
+          "commands": [
+            "# Setup production profile",
+            "godaddy auth setup --profile production",
+            "",
+            "# Setup development profile",
+            "godaddy auth setup --profile development",
+            "",
+            "# Use specific profile",
+            "godaddy --profile production dns list example.com"
+          ]
+        }
+      ]
+    }
+  },
+  "generated_at": "2025-09-28T04:21:54.266620"
+}

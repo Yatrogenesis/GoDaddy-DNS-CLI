@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from godaddy_cli.core.auth import AuthManager, APICredentials
+from godaddy_cli.utils.error_handlers import UserFriendlyErrorHandler, create_error_context
 
 console = Console()
 logger = logging.getLogger(__name__)

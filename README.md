@@ -243,6 +243,46 @@ python GODADDY_AUTO_SETUP.py enterprise-setup yourdomain.com my_config.json
 python GODADDY_AUTO_SETUP.py monitor app.yourdomain.com
 ```
 
+## 🚀 Roadmap
+
+### Current Version (v2.0.0)
+- ✅ **Core CLI Functionality**: Complete DNS record management
+- ✅ **Bulk Operations**: CSV/JSON/YAML import/export
+- ✅ **Web UI**: Modern React/TypeScript interface with feature parity
+- ✅ **Enhanced Error Handling**: User-friendly error messages with suggestions
+- ✅ **Integration Tests**: Comprehensive test suite for CLI commands
+- ✅ **API Documentation**: Auto-generated comprehensive API reference
+
+### Upcoming Features (v2.1.0) - Q4 2025
+- 🔄 **Advanced Monitoring**: Real-time DNS health monitoring with alerting
+- 🔄 **Template Engine**: Enhanced template system with conditional logic
+- 🔄 **Backup & Restore**: Automated DNS configuration backups
+- 🔄 **Domain Transfer**: Simplified domain transfer workflows
+- 🔄 **Performance Optimization**: Sub-second response times for all operations
+
+### Future Enhancements (v2.2.0+) - 2026
+- 📋 **Multi-Provider Support**: Cloudflare, Route53, Azure DNS integration
+- 🔐 **RBAC & Teams**: Role-based access control for enterprise teams
+- 📊 **Analytics Dashboard**: DNS traffic analysis and insights
+- 🤖 **AI-Powered Suggestions**: Intelligent DNS optimization recommendations
+- 🔗 **Kubernetes Integration**: Direct integration with Kubernetes DNS management
+- 📱 **Mobile App**: iOS/Android companion app for emergency DNS management
+
+### Long-term Vision (2027+)
+- 🌐 **Global DNS Network**: Multi-region DNS management platform
+- 🔮 **Predictive Analytics**: ML-powered DNS performance optimization
+- 🏢 **Enterprise Suite**: Complete DNS infrastructure management solution
+- 🔧 **Visual DNS Designer**: Drag-and-drop DNS configuration interface
+
+### Community Requests
+Vote on features you'd like to see prioritized:
+- **Progressive Web App (PWA)**: Offline-capable web interface
+- **DNS Testing Suite**: Automated DNS configuration testing
+- **Compliance Reports**: SOC2, GDPR compliance reporting
+- **Integration Marketplace**: Third-party tool integrations
+
+*Want to contribute to the roadmap? [Open an issue](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/issues) with your feature request!*
+
 ## 🤝 Contributing
 
 1. Fork the repository

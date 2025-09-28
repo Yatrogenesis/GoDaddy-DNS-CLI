@@ -14,9 +14,12 @@ from rich.prompt import Confirm
 from tabulate import tabulate
 
 from godaddy_cli.core.api_client import GoDaddyAPIClient, SyncGoDaddyAPIClient, DNSRecord, RecordType
+from godaddy_cli.core.simple_api_client import APIClient
 from godaddy_cli.core.auth import AuthManager
 from godaddy_cli.utils.validators import validate_domain, validate_ip, validate_ttl
 from godaddy_cli.utils.formatters import format_dns_table, format_json_output
+from godaddy_cli.utils.error_handlers import UserFriendlyErrorHandler
+from godaddy_cli.core.exceptions import GoDaddyDNSError
 
 console = Console()
 
@@ -50,15 +53,32 @@ def list(ctx, domain, record_type, name, output_format, export):
         return
 
     try:
-        client = SyncGoDaddyAPIClient(ctx.obj['auth'], ctx.obj['profile'])
-        records = client.list_dns_records(domain, record_type)
-
-        if name:
-            records = [r for r in records if r.name == name]
-
-        if not records:
-            console.print(f"[yellow]No DNS records found for {domain}[/yellow]")
+        # Get API credentials
+        auth_manager = ctx.obj['auth']
+        if not auth_manager.is_configured():
+            console.print("[red]API credentials not configured. Run 'godaddy auth setup' first.[/red]")
             return
+
+        api_key, api_secret = auth_manager.get_credentials()
+
+        # Use enhanced API client
+        with APIClient(api_key, api_secret) as client:
+            records = client.get_records(domain, record_type, name)
+
+            if not records:
+                if name and record_type:
+                    console.print(f"[yellow]No {record_type} record named '{name}' found for {domain}[/yellow]")
+                    console.print(f"[dim]Try: godaddy dns list {domain} --type {record_type}[/dim]")
+                elif name:
+                    console.print(f"[yellow]No record named '{name}' found for {domain}[/yellow]")
+                    console.print(f"[dim]Try: godaddy dns list {domain}[/dim]")
+                elif record_type:
+                    console.print(f"[yellow]No {record_type} records found for {domain}[/yellow]")
+                    console.print(f"[dim]Try: godaddy dns add {domain} --type {record_type}[/dim]")
+                else:
+                    console.print(f"[yellow]No DNS records found for {domain}[/yellow]")
+                    console.print(f"[dim]Try: godaddy dns add {domain}[/dim]")
+                return
 
         # Format output
         if ctx.obj['output_json'] or output_format == 'json':
@@ -103,8 +123,14 @@ def list(ctx, domain, record_type, name, output_format, export):
         else:
             console.print(output)
 
+    except GoDaddyDNSError as e:
+        UserFriendlyErrorHandler.display_error_with_suggestions(e, ctx.obj.get('debug', False))
+        if ctx.obj.get('debug'):
+            UserFriendlyErrorHandler.suggest_alternative_commands("list", domain)
     except Exception as e:
-        console.print(f"[red]Error listing DNS records: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get('debug'):
+            console.print_exception()
 
 @dns.command()
 @click.argument('domain')
@@ -189,8 +215,14 @@ def add(ctx, domain, record_type, name, data, ttl, priority, port, weight, confi
         else:
             console.print(f"[red]✗ Failed to create DNS record[/red]")
 
+    except GoDaddyDNSError as e:
+        UserFriendlyErrorHandler.display_error_with_suggestions(e, ctx.obj.get('debug', False))
+        if ctx.obj.get('debug'):
+            UserFriendlyErrorHandler.suggest_alternative_commands("add", domain)
     except Exception as e:
-        console.print(f"[red]Error creating DNS record: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get('debug'):
+            console.print_exception()
 
 @dns.command()
 @click.argument('domain')
@@ -240,8 +272,14 @@ def delete(ctx, domain, record_type, name, confirm):
         else:
             console.print(f"[red]✗ Failed to delete DNS record(s)[/red]")
 
+    except GoDaddyDNSError as e:
+        UserFriendlyErrorHandler.display_error_with_suggestions(e, ctx.obj.get('debug', False))
+        if ctx.obj.get('debug'):
+            UserFriendlyErrorHandler.suggest_alternative_commands("delete", domain)
     except Exception as e:
-        console.print(f"[red]Error deleting DNS record: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get('debug'):
+            console.print_exception()
 
 @dns.command()
 @click.argument('domain')
@@ -316,8 +354,14 @@ def update(ctx, domain, record_type, name, new_data, ttl, priority, confirm):
         else:
             console.print(f"[red]✗ Failed to update DNS record[/red]")
 
+    except GoDaddyDNSError as e:
+        UserFriendlyErrorHandler.display_error_with_suggestions(e, ctx.obj.get('debug', False))
+        if ctx.obj.get('debug'):
+            UserFriendlyErrorHandler.suggest_alternative_commands("update", domain)
     except Exception as e:
-        console.print(f"[red]Error updating DNS record: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get('debug'):
+            console.print_exception()
 
 @dns.command()
 @click.argument('domain')
