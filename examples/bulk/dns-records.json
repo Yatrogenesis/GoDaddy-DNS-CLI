@@ -1,0 +1,274 @@
+{
+  "domain": "example.com",
+  "metadata": {
+    "export_date": "2024-01-01T12:00:00Z",
+    "version": "2.0.0",
+    "total_records": 35,
+    "description": "Complete DNS configuration for example.com"
+  },
+  "records": [
+    {
+      "name": "@",
+      "type": "A",
+      "data": "203.0.113.1",
+      "ttl": 3600,
+      "description": "Root domain A record"
+    },
+    {
+      "name": "www",
+      "type": "A",
+      "data": "203.0.113.1",
+      "ttl": 3600,
+      "description": "WWW subdomain"
+    },
+    {
+      "name": "api",
+      "type": "CNAME",
+      "data": "api-gateway.cloudprovider.com",
+      "ttl": 1800,
+      "description": "API endpoint"
+    },
+    {
+      "name": "app",
+      "type": "CNAME",
+      "data": "app-server.cloudprovider.com",
+      "ttl": 1800,
+      "description": "Application server"
+    },
+    {
+      "name": "admin",
+      "type": "CNAME",
+      "data": "admin-panel.cloudprovider.com",
+      "ttl": 1800,
+      "description": "Admin panel"
+    },
+    {
+      "name": "docs",
+      "type": "CNAME",
+      "data": "docs-site.pages.dev",
+      "ttl": 3600,
+      "description": "Documentation site"
+    },
+    {
+      "name": "blog",
+      "type": "CNAME",
+      "data": "blog-site.pages.dev",
+      "ttl": 3600,
+      "description": "Blog site"
+    },
+    {
+      "name": "cdn",
+      "type": "CNAME",
+      "data": "cdn.cloudprovider.com",
+      "ttl": 3600,
+      "description": "CDN endpoint"
+    },
+    {
+      "name": "static",
+      "type": "CNAME",
+      "data": "static.cdn.cloudprovider.com",
+      "ttl": 3600,
+      "description": "Static assets CDN"
+    },
+    {
+      "name": "assets",
+      "type": "CNAME",
+      "data": "assets.cdn.cloudprovider.com",
+      "ttl": 3600,
+      "description": "Asset files CDN"
+    },
+    {
+      "name": "ftp",
+      "type": "A",
+      "data": "203.0.113.10",
+      "ttl": 3600,
+      "description": "FTP server"
+    },
+    {
+      "name": "mail",
+      "type": "A",
+      "data": "203.0.113.20",
+      "ttl": 3600,
+      "description": "Mail server"
+    },
+    {
+      "name": "smtp",
+      "type": "CNAME",
+      "data": "mail.example.com",
+      "ttl": 3600,
+      "description": "SMTP server"
+    },
+    {
+      "name": "imap",
+      "type": "CNAME",
+      "data": "mail.example.com",
+      "ttl": 3600,
+      "description": "IMAP server"
+    },
+    {
+      "name": "pop3",
+      "type": "CNAME",
+      "data": "mail.example.com",
+      "ttl": 3600,
+      "description": "POP3 server"
+    },
+    {
+      "name": "webmail",
+      "type": "CNAME",
+      "data": "mail.example.com",
+      "ttl": 3600,
+      "description": "Webmail interface"
+    },
+    {
+      "name": "@",
+      "type": "MX",
+      "data": "mail.example.com",
+      "ttl": 3600,
+      "priority": 10,
+      "description": "Primary mail server"
+    },
+    {
+      "name": "@",
+      "type": "MX",
+      "data": "backup-mail.example.com",
+      "ttl": 3600,
+      "priority": 20,
+      "description": "Backup mail server"
+    },
+    {
+      "name": "_service._tcp",
+      "type": "SRV",
+      "data": "service.example.com",
+      "ttl": 3600,
+      "priority": 10,
+      "weight": 20,
+      "port": 443,
+      "description": "Service discovery record"
+    },
+    {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "data": "sip.example.com",
+      "ttl": 3600,
+      "priority": 10,
+      "weight": 60,
+      "port": 5060,
+      "description": "SIP service discovery"
+    },
+    {
+      "name": "_xmpp-server._tcp",
+      "type": "SRV",
+      "data": "xmpp.example.com",
+      "ttl": 3600,
+      "priority": 5,
+      "weight": 0,
+      "port": 5269,
+      "description": "XMPP server discovery"
+    },
+    {
+      "name": "@",
+      "type": "TXT",
+      "data": "v=spf1 include:_spf.google.com ~all",
+      "ttl": 3600,
+      "description": "SPF record for email authentication"
+    },
+    {
+      "name": "_dmarc",
+      "type": "TXT",
+      "data": "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com",
+      "ttl": 3600,
+      "description": "DMARC policy record"
+    },
+    {
+      "name": "google._domainkey",
+      "type": "TXT",
+      "data": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA...",
+      "ttl": 3600,
+      "description": "DKIM public key for Google"
+    },
+    {
+      "name": "@",
+      "type": "TXT",
+      "data": "google-site-verification=abcdef123456789",
+      "ttl": 3600,
+      "description": "Google Search Console verification"
+    },
+    {
+      "name": "@",
+      "type": "TXT",
+      "data": "facebook-domain-verification=xyz789",
+      "ttl": 3600,
+      "description": "Facebook domain verification"
+    },
+    {
+      "name": "@",
+      "type": "CAA",
+      "data": "0 issue \"letsencrypt.org\"",
+      "ttl": 3600,
+      "description": "Certificate Authority Authorization"
+    },
+    {
+      "name": "@",
+      "type": "CAA",
+      "data": "0 issuewild \"letsencrypt.org\"",
+      "ttl": 3600,
+      "description": "Wildcard Certificate Authority Authorization"
+    },
+    {
+      "name": "@",
+      "type": "CAA",
+      "data": "0 iodef \"mailto:security@example.com\"",
+      "ttl": 3600,
+      "description": "Security incident reporting"
+    },
+    {
+      "name": "ns1",
+      "type": "A",
+      "data": "203.0.113.30",
+      "ttl": 3600,
+      "description": "Primary nameserver"
+    },
+    {
+      "name": "ns2",
+      "type": "A",
+      "data": "203.0.113.31",
+      "ttl": 3600,
+      "description": "Secondary nameserver"
+    },
+    {
+      "name": "test",
+      "type": "A",
+      "data": "203.0.113.100",
+      "ttl": 300,
+      "description": "Test environment"
+    },
+    {
+      "name": "staging",
+      "type": "A",
+      "data": "203.0.113.101",
+      "ttl": 300,
+      "description": "Staging environment"
+    },
+    {
+      "name": "dev",
+      "type": "A",
+      "data": "203.0.113.102",
+      "ttl": 300,
+      "description": "Development environment"
+    },
+    {
+      "name": "beta",
+      "type": "CNAME",
+      "data": "staging.example.com",
+      "ttl": 300,
+      "description": "Beta testing environment"
+    },
+    {
+      "name": "demo",
+      "type": "CNAME",
+      "data": "demo-app.cloudprovider.com",
+      "ttl": 300,
+      "description": "Demo environment"
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        exclude:
+          - os: windows-latest
+            python-version: '3.8'
+          - os: macos-latest
+            python-version: '3.8'
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,all]
+
+    - name: Lint with flake8
+      run: |
+        flake8 godaddy_cli tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 godaddy_cli tests --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+
+    - name: Type check with mypy
+      run: |
+        mypy godaddy_cli --ignore-missing-imports
+
+    - name: Format check with black
+      run: |
+        black --check --diff godaddy_cli tests
+
+    - name: Import sort check with isort
+      run: |
+        isort --check-only --diff godaddy_cli tests
+
+    - name: Test with pytest
+      run: |
+        pytest tests/ -v --cov=godaddy_cli --cov-report=xml --cov-report=term-missing
+      env:
+        COVERAGE_FILE: .coverage.${{ matrix.os }}.${{ matrix.python-version }}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: Security check with bandit
+      run: |
+        bandit -r godaddy_cli/ -f json -o bandit-report.json
+        bandit -r godaddy_cli/
+
+    - name: Safety check for known vulnerabilities
+      run: |
+        safety check --json --output safety-report.json
+        safety check
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  web-ui:
+    name: Web UI Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-ui
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-ui/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint TypeScript
+      run: npm run lint
+
+    - name: Type check
+      run: npm run type-check
+
+    - name: Build web UI
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: web-ui-build
+        path: godaddy_cli/web/static/
+
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+    needs: [test, security, web-ui]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Download web UI build
+      uses: actions/download-artifact@v3
+      with:
+        name: web-ui-build
+        path: godaddy_cli/web/static/
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine wheel
+
+    - name: Build package
+      run: python -m build
+
+    - name: Verify package
+      run: |
+        twine check dist/*
+        pip install dist/*.whl
+        godaddy --version
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package
+        path: dist/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package
+        path: dist/
+
+    - name: Install package
+      run: |
+        pip install dist/*.whl
+
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v -m "not api"
+      env:
+        GODADDY_API_KEY: ${{ secrets.GODADDY_API_KEY }}
+        GODADDY_API_SECRET: ${{ secrets.GODADDY_API_SECRET }}
+
+  publish:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    needs: [test, security, web-ui, build]
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package
+        path: dist/
+
+    - name: Install twine
+      run: pip install twine
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        twine upload dist/*
+
+    - name: Create GitHub release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: [test, security, web-ui]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event_name == 'release')
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Download web UI build
+      uses: actions/download-artifact@v3
+      with:
+        name: web-ui-build
+        path: godaddy_cli/web/static/
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: yatrogenesis/godaddy-dns-cli
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  notify:
+    name: Notification
+    runs-on: ubuntu-latest
+    needs: [test, security, web-ui, build]
+    if: always()
+
+    steps:
+    - name: Notify success
+      if: ${{ success() }}
+      run: |
+        echo "✅ All CI/CD jobs completed successfully!"
+
+    - name: Notify failure
+      if: ${{ failure() }}
+      run: |
+        echo "❌ CI/CD pipeline failed!"
+        exit 1

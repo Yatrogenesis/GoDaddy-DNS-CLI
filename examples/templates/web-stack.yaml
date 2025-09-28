@@ -1,0 +1,198 @@
+# Web Stack Template
+# Complete DNS setup for a modern web application
+
+name: "Web Stack Template"
+description: "Standard web application DNS configuration with CDN, API, and services"
+version: "1.0.0"
+author: "GoDaddy DNS CLI"
+
+# Template variables
+variables:
+  - name: "environment"
+    description: "Environment name (prod, staging, dev)"
+    type: "string"
+    required: true
+    default: "prod"
+    validation:
+      pattern: "^(prod|staging|dev)$"
+
+  - name: "cdn_ip"
+    description: "CDN/Load balancer IP address"
+    type: "ip"
+    required: true
+    example: "203.0.113.1"
+
+  - name: "api_cname"
+    description: "API service CNAME target"
+    type: "hostname"
+    required: true
+    example: "api-gateway.cloudprovider.com"
+
+  - name: "mail_server"
+    description: "Mail server hostname"
+    type: "hostname"
+    required: false
+    default: "mail.{{ domain }}"
+
+  - name: "enable_www"
+    description: "Enable www subdomain"
+    type: "boolean"
+    default: true
+
+  - name: "ttl_short"
+    description: "Short TTL for dynamic records"
+    type: "integer"
+    default: 300
+    validation:
+      min: 60
+      max: 3600
+
+  - name: "ttl_long"
+    description: "Long TTL for static records"
+    type: "integer"
+    default: 3600
+    validation:
+      min: 300
+      max: 86400
+
+# DNS records configuration
+records:
+  # Root domain A record
+  - name: "@"
+    type: "A"
+    data: "{{ cdn_ip }}"
+    ttl: "{{ ttl_long }}"
+    description: "Root domain pointing to CDN/Load balancer"
+
+  # WWW subdomain (conditional)
+  - name: "www"
+    type: "A"
+    data: "{{ cdn_ip }}"
+    ttl: "{{ ttl_long }}"
+    description: "WWW subdomain"
+    condition: "{{ enable_www }}"
+
+  # API subdomain
+  - name: "api"
+    type: "CNAME"
+    data: "{{ api_cname }}"
+    ttl: "{{ ttl_short }}"
+    description: "API endpoint"
+
+  # Environment-specific API
+  - name: "api-{{ environment }}"
+    type: "CNAME"
+    data: "{{ api_cname }}"
+    ttl: "{{ ttl_short }}"
+    description: "Environment-specific API endpoint"
+
+  # Static assets CDN
+  - name: "static"
+    type: "CNAME"
+    data: "static-{{ environment }}.cdn.example.com"
+    ttl: "{{ ttl_long }}"
+    description: "Static assets CDN"
+
+  # Admin panel
+  - name: "admin"
+    type: "CNAME"
+    data: "{{ api_cname }}"
+    ttl: "{{ ttl_short }}"
+    description: "Admin panel"
+
+  # Documentation
+  - name: "docs"
+    type: "CNAME"
+    data: "docs-{{ environment }}.hosting.example.com"
+    ttl: "{{ ttl_long }}"
+    description: "Documentation site"
+
+  # Status page
+  - name: "status"
+    type: "CNAME"
+    data: "status-{{ environment }}.monitoring.example.com"
+    ttl: "{{ ttl_short }}"
+    description: "Status page"
+
+  # Mail records
+  - name: "@"
+    type: "MX"
+    data: "{{ mail_server }}"
+    priority: 10
+    ttl: "{{ ttl_long }}"
+    description: "Primary mail server"
+
+  - name: "@"
+    type: "MX"
+    data: "backup-mail.{{ domain }}"
+    priority: 20
+    ttl: "{{ ttl_long }}"
+    description: "Backup mail server"
+
+  # SPF record
+  - name: "@"
+    type: "TXT"
+    data: "v=spf1 include:_spf.google.com ~all"
+    ttl: "{{ ttl_long }}"
+    description: "SPF record for email authentication"
+
+  # DKIM record (example)
+  - name: "google._domainkey"
+    type: "TXT"
+    data: "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA..."
+    ttl: "{{ ttl_long }}"
+    description: "DKIM public key"
+
+  # DMARC record
+  - name: "_dmarc"
+    type: "TXT"
+    data: "v=DMARC1; p=quarantine; rua=mailto:dmarc@{{ domain }}"
+    ttl: "{{ ttl_long }}"
+    description: "DMARC policy"
+
+  # Verification records
+  - name: "@"
+    type: "TXT"
+    data: "google-site-verification=abcdef123456789"
+    ttl: "{{ ttl_long }}"
+    description: "Google Search Console verification"
+
+  # Security policy
+  - name: "@"
+    type: "TXT"
+    data: "v=spf1 include:_spf.google.com ~all"
+    ttl: "{{ ttl_long }}"
+    description: "CAA record for certificate authority authorization"
+
+# Post-application hooks
+hooks:
+  pre_apply:
+    - command: "validate_ip"
+      params:
+        ip: "{{ cdn_ip }}"
+    - command: "check_cname_target"
+      params:
+        target: "{{ api_cname }}"
+
+  post_apply:
+    - command: "verify_propagation"
+      params:
+        records: ["@", "www", "api"]
+        timeout: 300
+    - command: "send_notification"
+      params:
+        webhook: "https://hooks.slack.com/services/..."
+        message: "DNS template applied to {{ domain }} ({{ environment }})"
+
+# Template metadata
+metadata:
+  tags:
+    - "web"
+    - "production"
+    - "complete"
+  compatibility:
+    - "cloudflare"
+    - "aws-route53"
+    - "google-dns"
+  last_updated: "2024-01-01"
+  min_cli_version: "2.0.0"

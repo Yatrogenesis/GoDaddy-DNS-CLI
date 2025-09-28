@@ -1,99 +1,140 @@
 # GoDaddy DNS CLI
 
-🚀 **Enterprise-grade CLI tool for GoDaddy DNS management** - Like `wrangler` but for GoDaddy
-
+[![CI/CD Pipeline](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/actions/workflows/ci.yml/badge.svg)](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/actions/workflows/ci.yml)
+[![Release Pipeline](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/actions/workflows/release.yml/badge.svg)](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/Yatrogenesis/GoDaddy-DNS-CLI/branch/main/graph/badge.svg)](https://codecov.io/gh/Yatrogenesis/GoDaddy-DNS-CLI)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![GoDaddy API](https://img.shields.io/badge/GoDaddy-API%20v1-green.svg)](https://developer.godaddy.com/)
+[![PyPI version](https://badge.fury.io/py/godaddy-dns-cli.svg)](https://badge.fury.io/py/godaddy-dns-cli)
 
-## ✨ Features
+Enterprise-grade command-line interface for managing GoDaddy DNS records with modern web UI, automation capabilities, and enterprise features.
 
-- **🔧 Automated DNS Management** - Configure DNS records with single commands
-- **📊 Real-time Monitoring** - Track DNS propagation across global servers
-- **💾 Backup & Restore** - Full DNS configuration backup and restoration
-- **🏢 Enterprise Setup** - Bulk subdomain configuration for organizations
-- **🎬 Demo Mode** - Test all features without API keys
-- **🔍 Propagation Tracking** - Monitor DNS changes in real-time
-- **🛡️ Error Handling** - Robust error handling and validation
+## Features
 
-## 🚀 Quick Start
+### Core CLI Features
+- **Complete DNS Management**: A, AAAA, CNAME, MX, TXT, SRV, NS, PTR records
+- **Bulk Operations**: Import/export from CSV, JSON, YAML
+- **Template System**: Reusable DNS configurations with variables
+- **Profile Management**: Multiple environments and credential sets
+- **Monitoring & Alerts**: DNS record change detection
+- **Validation**: DNS record syntax and propagation validation
+
+### Enterprise Features
+- **Web UI**: Modern React/TypeScript interface
+- **Authentication**: Secure API key management with keyring storage
+- **Rate Limiting**: Intelligent API throttling
+- **Async Operations**: High-performance concurrent processing
+- **Configuration**: Multiple formats (YAML, JSON, TOML)
+- **Extensibility**: Plugin architecture for custom commands
+
+### DevOps Integration
+- **CI/CD Ready**: GitHub Actions workflows included
+- **Docker Support**: Multi-stage containerized deployment
+- **Multi-Platform**: Windows, macOS, Linux executables
+- **Package Distribution**: PyPI, GitHub Releases, Docker Hub
+
+## Quick Start
 
 ### Installation
 
+#### PyPI (Recommended)
 ```bash
-# Clone the repository
+pip install godaddy-dns-cli
+```
+
+#### GitHub Releases
+Download pre-built executables from [releases](https://github.com/Yatrogenesis/GoDaddy-DNS-CLI/releases).
+
+#### Docker
+```bash
+docker run -it yatrogenesis/godaddy-dns-cli
+```
+
+#### Development Installation
+```bash
 git clone https://github.com/Yatrogenesis/GoDaddy-DNS-CLI.git
 cd GoDaddy-DNS-CLI
-
-# Install dependencies
-pip install requests
-
-# Run demo (no API keys required)
-python GODADDY_CLI_DEMO.py
+pip install -e .[dev,all]
 ```
 
-### Get API Credentials
-
-1. Go to [GoDaddy Developer Portal](https://developer.godaddy.com)
-2. Create account/login
-3. Navigate to "API Keys" section (🔑 icon)
-4. **Choose Environment**:
-   - **OTE (Test)**: For development/testing (recommended first)
-   - **Production**: For real DNS changes
-5. Create new key and copy API Key and Secret
-
-📖 **Detailed Guide**: See [GODADDY_API_SETUP.md](GODADDY_API_SETUP.md) for step-by-step instructions
-
-### Configure Credentials
-
+### Initial Setup
 ```bash
-# Windows
-set GODADDY_API_KEY=your_api_key
-set GODADDY_API_SECRET=your_api_secret
+# Configure API credentials
+godaddy init
 
-# Linux/Mac
-export GODADDY_API_KEY=your_api_key
-export GODADDY_API_SECRET=your_api_secret
+# List your domains
+godaddy domains list
+
+# Start web UI
+godaddy web --port 8080
 ```
 
-## 📋 Commands
+## Usage Examples
 
 ### Basic DNS Operations
-
 ```bash
-# Configure CNAME record
-python GODADDY_AUTO_SETUP.py cname example.com subdomain target.example.com
+# List all DNS records for a domain
+godaddy dns list example.com
 
-# List all DNS records
-python GODADDY_AUTO_SETUP.py list example.com
+# Add an A record
+godaddy dns add example.com A www 192.168.1.1 --ttl 3600
 
-# Get domain information
-python GODADDY_AUTO_SETUP.py info example.com
+# Update a CNAME record
+godaddy dns update example.com CNAME blog www.example.com
 
-# Delete DNS record
-python GODADDY_AUTO_SETUP.py delete example.com CNAME subdomain
+# Delete a record
+godaddy dns delete example.com A www
+
+# Validate records before applying
+godaddy dns validate example.com records.json
 ```
 
-### Advanced Features
-
+### Bulk Operations
 ```bash
-# Auto-configure with monitoring
-python GODADDY_AUTO_SETUP.py setup-creator
+# Import records from CSV
+godaddy bulk import example.com records.csv
 
-# Enterprise bulk setup
-python GODADDY_AUTO_SETUP.py setup-aion-complete
+# Export all records to JSON
+godaddy bulk export example.com --format json --output backup.json
 
-# Monitor DNS propagation
-python GODADDY_AUTO_SETUP.py monitor subdomain.example.com
+# Apply bulk changes with progress tracking
+godaddy bulk apply example.com changes.yaml --parallel 5
+```
 
-# Backup DNS configuration
-python GODADDY_AUTO_SETUP.py backup example.com
+### Template System
+```bash
+# Create a template
+godaddy template create web-stack template.yaml
 
-# Restore from backup
-python GODADDY_AUTO_SETUP.py restore dns_backup_example.com_20240927.json
+# Apply template to domain
+godaddy template apply example.com web-stack --vars env=prod
 
-# Enterprise setup from config
-python GODADDY_AUTO_SETUP.py enterprise-setup example.com enterprise_config.json
+# List available templates
+godaddy template list
+```
+
+### Profile Management
+```bash
+# Create production profile
+godaddy config profile create production
+
+# Switch profiles
+godaddy config profile use production
+
+# List profiles
+godaddy config profile list
+```
+
+### Monitoring
+```bash
+# Monitor domain for changes
+godaddy monitor start example.com --interval 300
+
+# View monitoring status
+godaddy monitor status
+
+# Set up alerts
+godaddy monitor alert example.com webhook https://alerts.company.com
 ```
 
 ## 📁 Files
