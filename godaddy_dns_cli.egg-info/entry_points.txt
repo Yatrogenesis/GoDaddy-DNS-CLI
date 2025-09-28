@@ -1,0 +1,4 @@
+[console_scripts]
+gd = godaddy_cli.cli:main
+godaddy = godaddy_cli.cli:main
+godaddy-web = godaddy_cli.web.server:main

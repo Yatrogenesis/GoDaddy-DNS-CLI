@@ -51,7 +51,8 @@ def format_dns_table(records: List[DNSRecord], title: str = "DNS Records") -> st
         )
 
     with StringIO() as output:
-        console.print(table, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(table)
         return output.getvalue()
 
 
@@ -91,7 +92,8 @@ def format_domain_table(domains: List[Domain], title: str = "Domains") -> str:
         )
 
     with StringIO() as output:
-        console.print(table, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(table)
         return output.getvalue()
 
 
@@ -190,7 +192,8 @@ def format_status_panel(status: str, message: str) -> str:
     )
 
     with StringIO() as output:
-        console.print(panel, file=output)
+        temp_console = Console(file=output, width=80)
+        temp_console.print(panel)
         return output.getvalue()
 
 
@@ -237,7 +240,8 @@ def format_error_details(error: Exception, show_traceback: bool = False) -> str:
         error_text.append(traceback.format_exc(), style="red dim")
 
     with StringIO() as output:
-        console.print(error_text, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(error_text)
         return output.getvalue()
 
 
@@ -268,7 +272,8 @@ def format_validation_results(results: Dict[str, Any]) -> str:
         )
 
     with StringIO() as output:
-        console.print(table, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(table)
         return output.getvalue()
 
 
@@ -333,7 +338,8 @@ def format_monitoring_status(status: Dict[str, Any]) -> str:
         )
 
     with StringIO() as output:
-        console.print(table, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(table)
         return output.getvalue()
 
 
@@ -396,7 +402,8 @@ def format_config_info(config: Dict[str, Any]) -> str:
     add_config_section("", config)
 
     with StringIO() as output:
-        console.print(table, file=output)
+        temp_console = Console(file=output, width=120)
+        temp_console.print(table)
         return output.getvalue()
 
 

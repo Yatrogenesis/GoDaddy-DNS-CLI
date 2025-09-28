@@ -17,19 +17,7 @@ from rich import print as rprint
 from godaddy_cli.__version__ import __version__
 from godaddy_cli.core.config import ConfigManager
 from godaddy_cli.core.auth import AuthManager
-from godaddy_cli.commands import (
-    dns,
-    domain,
-    config,
-    auth,
-    template,
-    export,
-    import_cmd,
-    monitor,
-    bulk,
-    init,
-    deploy
-)
+# Commands will be imported individually below
 
 console = Console()
 
@@ -139,17 +127,71 @@ def interactive(ctx):
     shell.run()
 
 # Register command groups
-cli.add_command(dns.dns)
-cli.add_command(domain.domain)
-cli.add_command(config.config_cmd)
-cli.add_command(auth.auth)
-cli.add_command(template.template)
-cli.add_command(export.export)
-cli.add_command(import_cmd.import_cmd)
-cli.add_command(monitor.monitor)
-cli.add_command(bulk.bulk)
-cli.add_command(init.init)
-cli.add_command(deploy.deploy)
+try:
+    from godaddy_cli.commands.dns import dns_group
+    cli.add_command(dns_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.domain import domains_group
+    cli.add_command(domains_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.config import config_group
+    cli.add_command(config_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.auth import auth_group
+    cli.add_command(auth_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.template import template_group
+    cli.add_command(template_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.export import export_group
+    cli.add_command(export_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.import_cmd import import_group
+    cli.add_command(import_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.monitor import monitor_group
+    cli.add_command(monitor_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.bulk import bulk_group
+    cli.add_command(bulk_group)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.init import init_project
+    cli.add_command(init_project)
+except ImportError:
+    pass
+
+try:
+    from godaddy_cli.commands.deploy import deploy_group
+    cli.add_command(deploy_group)
+except ImportError:
+    pass
 
 def main():
     """Main entry point"""
