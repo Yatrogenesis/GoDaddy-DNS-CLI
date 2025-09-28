@@ -36,9 +36,13 @@ python GODADDY_CLI_DEMO.py
 
 1. Go to [GoDaddy Developer Portal](https://developer.godaddy.com)
 2. Create account/login
-3. Navigate to "API Keys"
-4. Create new Production key
-5. Copy API Key and Secret
+3. Navigate to "API Keys" section (🔑 icon)
+4. **Choose Environment**:
+   - **OTE (Test)**: For development/testing (recommended first)
+   - **Production**: For real DNS changes
+5. Create new key and copy API Key and Secret
+
+📖 **Detailed Guide**: See [GODADDY_API_SETUP.md](GODADDY_API_SETUP.md) for step-by-step instructions
 
 ### Configure Credentials
 
